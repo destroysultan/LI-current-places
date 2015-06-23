@@ -12,9 +12,6 @@ var routes = require('./routes/index');
 var users = require('./routes/users');
 var Workbook = require('workbook');
 
-//initial file to read linkedin links from
-var fileName = "source.xlsx";
-
 var app = express();
 
 // view engine setup
@@ -39,6 +36,10 @@ app.use(function(req, res, next) {
   next(err);
 });
 
+//initial file to read linkedin links from
+/////////////CREATE A FILE WITH YOUR URLS AND PUT THE PATH HERE////////////
+var fileName = "source.xlsx";
+
 function parseAndWrite() {
   var readWorkbook = xlsx.readFile(fileName);
   var firstSheet = readWorkbook.SheetNames[0];
@@ -46,20 +47,24 @@ function parseAndWrite() {
   var sheet = readWorkbook.Sheets[firstSheet];
 
   var data = [];
+
+  //collect arrays of info on each person, arrays of arrays make up the workbook
   for (cell in sheet){
     if (sheet[cell]) {
       var person = [];
         if (sheet[cell].v){
           person = getLinkedinInfo(sheet[cell].v);
-          //console.log(person);
         }
 
+        //data is so mean, pushing people and stuff
         data.push(person);
     }
   }
 
    var workbook = new Workbook().addRowsToSheet("Info", data).finalize();
    xlsx.writeFile(workbook, 'li-positions.xlsx'); 
+
+   //c'est fini
    console.log("DONNNNNEE");
 }
 
@@ -71,7 +76,10 @@ function getLinkedinInfo(url, cell) {
 
  console.log($('.full-name').text());
 
- currentArray.push($('.full-name').html());    
+ //push each persons info into one array
+ currentArray.push($('.full-name').html());
+
+ //account for multiple current positions
  $('div.current-position > div > header').each(function() {
 
      //dig out title and company from DOM
@@ -80,10 +88,9 @@ function getLinkedinInfo(url, cell) {
      var title = $(headerKids).eq(0).text();
      var second = $(headerKids).eq(1).text();
 
-     //console.log(second);
-
      var company = "";
 
+     //sometimes company and title are in different places
      if (title == ""){
       title = second;
       company = $(headerKids).eq(2).text();
